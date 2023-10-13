@@ -43,4 +43,18 @@ Some of the key engineering benefits of a microservice architecture include: Fle
 + Apigee.
 + Amazon API Gateway.
 
+#### Centralized Configuration management
+Advantage : 
++ All microservices configuration at central place in Config server
++ If we change in configuration we dont need to restart a all service it will reflect in that services
+
+1. Add dependecy of config server and eureka discovery client
+2. Annotation of @EnableConfigServer
+3. Like all Spring Boot applications, it runs on port 8080 by default, but you can switch it to the more conventional port 8888 in various ways.
+4. Need a git URI for configuration  
+5. spring.profile.active: native  (Configuration available on config server microservices)
+6. With help of Spring.application.name : anyname  config server will identified services
+7. add dependency of config client in other miroservices
+8. Add location of config server using : spring.config.import : optional:configserver:http://localhost:8888  (optional meaning is if config server is down --service should run without config server as well)
+
 
