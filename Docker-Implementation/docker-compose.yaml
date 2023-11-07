@@ -1,0 +1,88 @@
+version: '3.6'
+services:
+  mysqldb:
+    image: mysql:8.0
+    container_name: mysqldb
+    environment:
+      #MYSQL_USERNAME: root
+      #MYSQL_USER: root
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: test
+    ports:
+      - 3307:3306
+  service-discovery:
+    container_name: service-discovery
+    environment:  
+      EUREKASERVER_URI: http://service-discovery:8761/eureka/
+      EUREKASERVER_PORT: 8761
+    build:
+      context: service-discovery
+      dockerfile: Dockerfile
+    image: service-discovery:latest
+    ports:
+     - 8761:8762
+
+  config-server:
+    container_name: config-server
+    build:
+      context: config-server
+      dockerfile: Dockerfile
+    image: config-server:latest
+    restart: always
+    environment:
+      CONFIG_GIT_URI: https://github.com/priyaghadge99/config-server-git
+      USERNAME: priyaghadge99
+      PASSWORD: priyaghadge1
+    ports:
+      - 8889:8888 
+    links :
+      - service-discovery
+    
+  gateway-server:
+    container_name: gateway-server
+    build:
+      context: api-gateway
+      dockerfile: Dockerfile
+    image: gateway-server:latest
+    restart: always
+    ports:
+      - 8081:8080
+    links: 
+      - service-discovery 
+      
+  product-server:
+    container_name: product-server
+    build:
+     context: product-service
+     dockerfile: Dockerfile
+    image: priyaghadge/productservicedc
+    environment:
+      CONFIG_IMPORT: optional:configserver:${CONFIG-SERVER:http://config-server:8888}
+      CONFIG-SERVER: http://config-server:8888 
+      DEFAULT_ZONE: http://service-discovery:8761/eureka
+    ports:
+    - 9001:9000
+    restart: on-failure
+    links: 
+    - mysqldb
+    - service-discovery
+    - gateway-server
+    - config-server
+    
+  coupon-server:
+    container_name: coupon-server
+    build:
+     context: coupon-service
+     dockerfile: Dockerfile
+    image: priyaghadge/coupon-servicedc
+    environment:
+      CONFIG-SERVER: http://config-server:8888  
+      DEFAULT_ZONE: http://service-discovery:8761/eureka
+    restart: on-failure     
+    ports:
+      - 8084:8083
+    links: 
+    - mysqldb
+    - service-discovery
+    - gateway-server   
+    - config-server                                       

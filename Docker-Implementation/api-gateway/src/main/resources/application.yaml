@@ -1,0 +1,37 @@
+
+spring:
+  application:
+    name: api-gateway
+
+   
+  cloud:
+    gateway:
+      routes:
+      - id: PRODUCT-SERVICE
+        uri: lb://PRODUCT-SERVICE
+        predicates:
+        - Path=/product-api/**  
+      - id: COUPON-SERVICE
+        uri: lb://COUPON-SERVICE
+        predicates:
+        - Path=/coupon-api/**  
+    discovery:
+      enabled: true
+                               
+eureka:
+  instance:
+    hostname: localhost
+    prefer-ip-address: true
+    
+  client:
+    fetch-registry: true
+    register-with-eureka: true
+    service-url: 
+     defaultZone: ${EUREKASERVER_URI :http://localhost:8761/eureka}
+     
+     
+management:
+  tracing:
+    sampling:
+      probability: 1.0   
+    
